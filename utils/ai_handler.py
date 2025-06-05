@@ -1,5 +1,6 @@
 # utils/ai_handler.py
 
+from google.api_core.exceptions import ResourceExhausted
 import google.generativeai as genai
 
 # --- Constants ---
@@ -65,5 +66,20 @@ class AIHandler:
                 return "I received an empty response from the AI. Please try rephrasing your question."
 
         except Exception as e:
-            print(f"Error interacting with Gemini API: {e}")
-            return f"Sorry, an error occurred while contacting the AI service: {e}"
+            error_str = str(e).lower()
+            print(f"Error interacting with Gemini API: {e}") # Log the full error for the admin
+
+            if isinstance(e, ResourceExhausted) or \
+               "quota" in error_str or \
+               "rate limit" in error_str or \
+               "429" in error_str:
+                return ("I'm currently experiencing high demand or have reached my usage limit "
+                        "with the AI service. Please try again later.")
+            elif "api key" in error_str and ("invalid" in error_str or "not valid" in error_str or "could not be authenticated" in error_str):
+                # This helps catch issues if the API key becomes invalid after initial setup.
+                return ("There seems to be an issue with the AI service configuration (e.g., API key). "
+                        "Please contact the bot administrator.")
+            else:
+                # Generic error for other unexpected issues
+                return ("Sorry, an unexpected error occurred while trying to process your "
+                        "request with the AI service. Please try again.")
