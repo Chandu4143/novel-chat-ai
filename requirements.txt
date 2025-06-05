@@ -1,0 +1,7 @@
+# requirements.txt
+discord.py
+python-dotenv
+google-generativeai
+PyMuPDF
+ebooklib
+beautifulsoup4
